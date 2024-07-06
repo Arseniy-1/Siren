@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class SignalingSystem : MonoBehaviour
@@ -8,14 +9,16 @@ public class SignalingSystem : MonoBehaviour
 
     private void Update()
     {
-        CorrectStatus();
         _alarmSound.volume = _currentSoundLevel;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out Robber robber))
+        {
             _isEmpty = false;
+            StartCoroutine(UpStatus());
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -24,23 +27,22 @@ public class SignalingSystem : MonoBehaviour
             _isEmpty = true;
     }
 
-    private void CorrectStatus()
+    private IEnumerator UpStatus()
     {
-        float soundStep = 0.1f;
+        float alarmSoundStem = 0.1f;
+        int delay = 1;
+        var alarmDelay = new WaitForSeconds(delay);
 
-        if (_isEmpty)
+        while (_isEmpty == false)
         {
-            if (_currentSoundLevel < 0)
-                _currentSoundLevel = 0;
-            else if (_currentSoundLevel > 0)
-                _currentSoundLevel -= soundStep * Time.deltaTime;
+            _currentSoundLevel += alarmSoundStem;
+            yield return alarmDelay;
         }
-        else
+
+        while (_currentSoundLevel > 0)
         {
-            if (_currentSoundLevel > 1)
-                _currentSoundLevel = 1;
-            else if (_currentSoundLevel < 1)
-                _currentSoundLevel += soundStep * Time.deltaTime;
+            _currentSoundLevel -= alarmSoundStem;
+            yield return alarmDelay;
         }
     }
 }
